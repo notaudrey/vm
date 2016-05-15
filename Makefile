@@ -1,10 +1,13 @@
 CC = clang
-CFLAGS = -std=c11 -g
+CFLAGS = -g -D__DEBUG_BUILD
 TARGET = lang 
 
-CFLAGS += -Wall -Wextra -pipe -lreadline
+CFLAGS += -Wall -Wextra -pipe -lreadline -std=c11
 
 all: $(TARGET)
+
+valgrind: $(TARGET)
+	valgrind -v --track-origins=yes ./$(TARGET)
 
 $(TARGET): versionheader
 	# Curse you __FILE__

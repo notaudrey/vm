@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "config.h"
+#include "debug.h"
 #include "stack.h"
 #include "vm.h"
 
@@ -21,25 +22,12 @@ int main(int argc, char** argv) {
     };
 
     const int program_length = sizeof(program) / sizeof(*program);
-    printf("program length: %d\n", program_length);
-
+    DEBUG("INFO", "program length: %d", program_length);
     for(int i = 0; i < program_length; i++) {
         enum opcode_e opcode = program[i];
-        printf("opcode: 0x%x\n", opcode);
-        void (*handler) ();
-        handler = *(vm->opcode_dispatch_table + opcode);
+        DEBUG("INFO", "opcode: 0x%x", opcode);
+        void (*handler) () = *(vm->opcode_dispatch_table + opcode);
         handler(vm);
-        /*switch(opcode) {
-            case OPCODE_TRUE:
-                push(vm->stack, 1);
-                break;
-            case OPCODE_POP:
-                pop(vm->stack);
-                break;
-            default:
-                printf("Unknown opcode: 0x%x\n", opcode);
-                break;
-        }*/
         printf("stack: {");
         for(int i = 0; i < vm->stack->current_position; i++) {
             printf("%d", vm->stack->stack[i]);
