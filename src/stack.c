@@ -1,3 +1,6 @@
+#include <stdlib.h>
+
+#include "config.h"
 #include "stack.h"
 
 void push(struct stack_s *stack, const int value) {

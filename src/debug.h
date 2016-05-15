@@ -11,12 +11,13 @@
 #define RESET "\x1B[0m"
 
 
-#ifdef __DEBUG_BUILD // If debug build
-    // Debug print statements! :D
+#ifdef __DEBUG_BUILD
+    // Debug print statements
     #define DEBUG(type, fmt, args...) fprintf(stderr, WHT "[" RED "%s" WHT ":" \
             BLU "%d" WHT ":" GRN "%s()" WHT "] " WHT "[" BLU "%s" WHT "] " fmt \
-            "\n" RESET, __FILE__, __LINE__, __func__, type, ## args);
+            RESET, __FILE__, __LINE__, __func__, type, ## args);
 #else
     // Not debug mode? Don't print anything
     #define DEBUG(type, fmt, args...)
 #endif
+

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 // See https://github.com/munificent/wren/blob/master/src/vm/wren_vm.h
 enum opcode_e {
     #define OPCODE(name, _) OPCODE_##name,
@@ -15,10 +17,10 @@ struct vm_s {
     // vm simply has to do something like 
     //   *(opcode_dispatch_table + opcode_number)(vm)
     // to call the proper handler function for every opcode.
-    void **opcode_dispatch_table;
+    bool (**opcode_dispatch_table) (struct vm_s *);
 };
 
-struct vm_s *init_vm(void);
+struct vm_s *vm_init(void);
 
-void destroy_vm(struct vm_s *);
+void vm_destroy(struct vm_s *);
 

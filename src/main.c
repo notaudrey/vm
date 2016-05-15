@@ -13,30 +13,49 @@ int main(int argc, char** argv) {
     printf("git long hash: %s\n", GIT_LONG_HASH);
     printf("build date: %s\n", DATE);
 
-    struct vm_s *vm = init_vm();
+    struct vm_s *vm = vm_init();
     enum opcode_e program[] = {
         OPCODE_TRUE,
-        OPCODE_TRUE,
+        OPCODE_FALSE,
         OPCODE_POP,
         OPCODE_POP
     };
 
+    // Eventually this won't matter
     const int program_length = sizeof(program) / sizeof(*program);
-    DEBUG("INFO", "program length: %d", program_length);
+    DEBUG("INFO", "program length: %d\n", program_length);
+    
     for(int i = 0; i < program_length; i++) {
         enum opcode_e opcode = program[i];
-        DEBUG("INFO", "opcode: 0x%x", opcode);
-        void (*handler) () = *(vm->opcode_dispatch_table + opcode);
-        handler(vm);
-        printf("stack: {");
+        DEBUG("INFO", "opcode: 0x%x\n", opcode);
+        
+        // => invert fptr call result |                        end typecast <=
+        // |                          |                                      |
+        // | => cast to a bool(struct | => get value at the opcode's index <=| 
+        // | |  vm_s *) function ptr  | |  in the opcode dispatch table     || => call function
+        // | |                        | |                                   || |  |
+        if(!((bool (*) (struct vm_s *)) *(vm->opcode_dispatch_table + opcode)) (vm)) {
+            fprintf(stderr, RED "Failed on opcode 0x%x (#%d), bailing out...", opcode, vm->opcode_counter);
+            goto end;
+        }
+#ifdef __DEBUG_BUILD
+        // We do this inside of an #ifdef because generating a string for this
+        // and having to deal with all that nonsense would be a pain.
+        else {
+            DEBUG("INFO", WHT "Succeeded with opcode: 0x%x\n" RESET, opcode);
+        }
+
+        DEBUG("INFO", WHT "stack: {");
         for(int i = 0; i < vm->stack->current_position; i++) {
-            printf("%d", vm->stack->stack[i]);
+            printf(RESET "%d", vm->stack->stack[i]);
             if(i < vm->stack->current_position - 1) {
-                printf(", ");
+                printf(WHT ", ");
             }
         }
-        printf("}\n");
+        printf(WHT "}" RESET "\n");
+#endif
     }
-    destroy_vm(vm);
+end:
+    vm_destroy(vm);
     return 0;
 }
