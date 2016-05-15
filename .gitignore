@@ -1,4 +1,5 @@
 __pycache__/
 lang
 *.swp
+src/*.swp
 
