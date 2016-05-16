@@ -20,6 +20,27 @@ struct vm_s {
     bool (**opcode_dispatch_table) (struct vm_s *);
 };
 
+/// The context for a stackframe. Would be used for printing out information
+/// when unwinding the stack to print out "oh noes an error happened! ;-;" or
+/// similar.
+struct stackframe_context_s {
+    ;
+};
+
+/// A single stackframe is the "context" of a given function, and cannot be 
+/// accessed from within any other stack frames. Each stack frame has its own
+/// local stack and local variables. 
+///
+/// TODO: Determine how returning from a function should work
+struct stackframe_s {
+    /// Local variables of this stack frame. This like a 'this' pointer would 
+    /// also go here
+    /// TODO: Oh right that's why I needed a linked list...
+    struct stack_s *locals;
+    /// Stack for this stack frame. Used exactly as you would think.
+    struct stack_s *stack;
+};
+
 struct vm_s *vm_init(void);
 
 void vm_destroy(struct vm_s *);
