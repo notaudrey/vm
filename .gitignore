@@ -2,5 +2,6 @@ __pycache__/
 lang
 *.swp
 src/*.swp
+src/.*.swp
 vgcore*
 
