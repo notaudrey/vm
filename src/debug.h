@@ -20,7 +20,7 @@
     // 
     // BE WARNED: This method of printing out the timestamp does a LOT of 
     // malloc() calls.
-    #define DEBUG(type, fmt, args...) do { \
+    #define _LOG(type, fmt, args...) do { \
         /* Oh this is so ugly :( There has to be a better way to do timestamps */ \
         time_t now; \
         time(&now); \
@@ -30,8 +30,9 @@
         /* Print everything */ \
         fprintf(stderr, WHT "[" YEL "%s" WHT "] [" RED "%s" WHT ":" BLU "%d" \
             WHT ":" GRN "%s()" WHT "] " WHT "[" BLU "%s" WHT "] " fmt RESET, \
-            time, __FILE__, __LINE__, __func__, type, ## args);\
+            time, __FILE__, __LINE__, __func__, type, ##args);\
         } while(0);
+    #define DEBUG(fmt, args...) _LOG("DEBUG", fmt, ##args)
 #else
     // Not debug mode? Don't print anything
     #define DEBUG(type, fmt, args...)

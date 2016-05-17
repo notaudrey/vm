@@ -10,14 +10,12 @@
 #include "version.h"
 
 // Create a lookup table so that we can see opcode names during debugging.
-#ifdef __DEBUG_BUILD
 static char *opcode_name_table[] = {
 // Abuse of stringification
 #define OPCODE(name, _) "" #name "",
 #include "opcodes.h"
 #undef OPCODE
 };
-#endif
 
 int main(int argc, char** argv) {
     printf("git short hash: %s\n", GIT_SHORT_HASH);
@@ -34,11 +32,11 @@ int main(int argc, char** argv) {
 
     // Eventually this won't matter
     const int program_length = sizeof(program) / sizeof(*program);
-    DEBUG("INFO", "program length: %d\n", program_length);
+    DEBUG("program length: %d\n", program_length);
     
     for(int i = 0; i < program_length; i++) {
         enum opcode_e opcode = program[i];
-        DEBUG("INFO", "opcode: 0x%x\n", opcode);
+        DEBUG("opcode: 0x%x\n", opcode);
         
         // => invert fptr call result                          end typecast <=
         // |                                                                 |
@@ -53,28 +51,30 @@ int main(int argc, char** argv) {
         // We do this inside of an #ifdef because generating a string for this
         // and having to deal with all that nonsense would be a pain.
         else {
-            DEBUG("INFO", WHT "Succeeded with opcode: 0x%x (%s)\n" RESET, opcode, opcode_name_table[opcode]);
+            DEBUG(WHT "Succeeded with opcode: 0x%x (%s)\n" RESET, opcode, opcode_name_table[opcode]);
         }
 
-        DEBUG("INFO", WHT "stack: {");
-        for(int i = 0; i < vm->stack->current_position; i++) {
-            switch(vm->stack->stack[i]->type) {
+        DEBUG(WHT "stack: {");
+        struct stackframe_s *frame = vm_peek_frame(vm);
+        for(int i = 0; i < frame->stack->current_position; i++) {
+            struct value_s *value = frame->stack->stack[i];
+            switch(value->type) {
                 case BOOLEAN:
-                    printf(RESET "%s", vm->stack->stack[i]->bool_value ? "true" : "false");
+                    printf(RESET "%s", value->bool_value ? "true" : "false");
                     break;
                 case INT:
-                    printf(RESET "%d", vm->stack->stack[i]->int_value);
+                    printf(RESET "%d", value->int_value);
                     break;
                 case FLOAT:
-                    printf(RESET "%f", vm->stack->stack[i]->float_value);
+                    printf(RESET "%f", value->float_value);
                     break;
                 default:
-                    fprintf(stderr, RED "Failed printing stack value @ stack[%d] (%p), bailing out...", 
-                            i, (void *) vm->stack->stack[i]);
+                    fprintf(stderr, RED "Failed printing stack value @ stack[%d] (%p), bailing out..." RESET "\n", 
+                            i, (void *) value);
                     goto end;
             }
-            // printf(RESET "%d", vm->stack->stack[i]);
-            if(i < vm->stack->current_position - 1) {
+            // printf(RESET "%d", value);
+            if(i < frame->stack->current_position - 1) {
                 printf(WHT ", ");
             }
         }

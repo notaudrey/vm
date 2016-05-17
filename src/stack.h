@@ -4,9 +4,10 @@
 #include "value.h"
 
 struct stack_s {
-    struct value_s *stack[STACK_LIMIT];
+    void *stack[STACK_LIMIT];
     int current_position;
 };
 
-void push(struct stack_s *, struct value_s *);
-struct value_s *pop(struct stack_s *);
+struct stack_s *stack_new(void);
+void stack_push(struct stack_s *, void *);
+void *stack_pop(struct stack_s *);

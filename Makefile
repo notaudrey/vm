@@ -7,7 +7,7 @@ CFLAGS += -Wall -Wextra -pipe -lreadline -std=c11
 all: $(TARGET)
 
 valgrind: $(TARGET)
-	valgrind -v --track-origins=yes ./$(TARGET)
+	valgrind -v --track-origins=yes --leak-check=full ./$(TARGET)
 
 $(TARGET): versionheader
 	# Curse you __FILE__
