@@ -9,11 +9,13 @@
 #include "version.h"
 #include "vm.h"
 
-bool dispatch_opcode_TRUE(struct vm_s *);
-bool dispatch_opcode_FALSE(struct vm_s *);
-bool dispatch_opcode_POP(struct vm_s *);
+#define OPCODE(name, _) int dispatch_opcode_##name(struct vm_s *);
+#include "opcodes.h"
+#undef OPCODE
 static inline bool vm_check_stack_overflow(struct vm_s *);
 static inline bool vm_check_stack_underflow(struct vm_s *);
+static inline bool vm_check_frame_stack_underflow(struct vm_s *);
+static inline bool vm_check_frame_stack_overflow(struct vm_s *);
 
 struct vm_s *vm_init(void) {
     struct vm_s *vm = malloc(sizeof(struct vm_s));
@@ -21,7 +23,7 @@ struct vm_s *vm_init(void) {
     vm->opcode_counter = 0;
 
     // bool (*opcode_dispatch_table[]) (struct vm_s *);
-    vm->opcode_dispatch_table = (bool (**) (struct vm_s *)) malloc(sizeof(bool *) * (unsigned long)(OPCODE_COUNT - '0'));
+    vm->opcode_dispatch_table = malloc(sizeof(int *) * (unsigned long)(OPCODE_COUNT - '0'));
     unsigned int counter = 0;
 
     // Define the OPCODE macro as an update to the dispatch table, where every
@@ -99,33 +101,42 @@ struct stackframe_s *vm_pop_frame(struct vm_s *vm) {
 /// TODO: Check stack over/underflow
 /// 
 
-bool dispatch_opcode_TRUE(struct vm_s *vm) {
+int dispatch_opcode_TRUE(struct vm_s *vm) {
+    if(vm_check_frame_stack_overflow(vm)) {
+        return ERROR_STACK_OVERFLOW;
+    }
     // Right now, naively allocate something new on the stack every time
-    struct value_s *value = (struct value_s *) malloc(sizeof(struct value_s));
+    struct value_s *value = malloc(sizeof(struct value_s));
     DEBUG("malloc'd: %p\n", (void *) value)
     value->type = BOOLEAN;
     value->bool_value = true;
     stack_push(vm_peek_frame(vm)->stack, value);
-    return true;
+    return ERROR_NO_ERROR;
 }
 
-bool dispatch_opcode_FALSE(struct vm_s *vm) {
+int dispatch_opcode_FALSE(struct vm_s *vm) {
+    if(vm_check_frame_stack_overflow(vm)) {
+        return ERROR_STACK_OVERFLOW;
+    }
     // Right now, naively allocate something new on the stack every time
     struct value_s *value = malloc(sizeof(struct value_s));
     DEBUG("malloc'd: %p\n", (void *) value)
     value->type = BOOLEAN;
     value->bool_value = false;
     stack_push(vm_peek_frame(vm)->stack, value);
-    return true;
+    return ERROR_NO_ERROR;
 }
 
-bool dispatch_opcode_POP(struct vm_s *vm) {
+int dispatch_opcode_POP(struct vm_s *vm) {
+    if(vm_check_frame_stack_underflow(vm)) {
+        return ERROR_STACK_UNDERFLOW;
+    }
     struct value_s *popped = stack_pop(vm_peek_frame(vm)->stack);
     // Because for some reason, &popped gives nonsense but (void *) popped works fine...
     DEBUG("free'd: %p\n", (void *) popped);
     // Right now, naively free anything popped from the stack
     free(popped);
-    return true;
+    return ERROR_NO_ERROR;
 }
 
 /// 

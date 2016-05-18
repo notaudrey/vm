@@ -12,6 +12,12 @@ enum opcode_e {
     #undef OPCODE
 };
 
+enum error_e {
+    #define ERROR(name) ERROR_##name,
+    #include "error.h"
+    #undef ERROR
+};
+
 struct vm_s {
     struct stack_s *stack;
     unsigned int opcode_counter;
@@ -19,8 +25,12 @@ struct vm_s {
     // declared in vm.c, which we use to actually handle opcode dispatch. The
     // vm simply has to do something like 
     //   *(opcode_dispatch_table + opcode_number)(vm)
-    // to call the proper handler function for every opcode.
-    bool (**opcode_dispatch_table) (struct vm_s *);
+    // to call the proper handler function for every opcode. Opcode dispatch
+    // functions return integers, similar to the return value of main(). A
+    // return value of 0 means that the function call succeeded. Any other
+    // return value is an offset into the error message lookup table in error.h
+    // and will be printed out, and the VM will exit immediately.
+    int (**opcode_dispatch_table) (struct vm_s *);
 };
 
 /// The context for a stackframe. Would be used for printing out information
