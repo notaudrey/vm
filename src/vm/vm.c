@@ -140,6 +140,11 @@ int dispatch_opcode_POP(struct vm_s *vm) {
     return ERROR_NO_ERROR;
 }
 
+/// Dummy
+int dispatch_opcode_FUNCTION_DECLARATOR(struct vm_s *vm) {
+    return 0;
+}
+
 /// 
 /// Helper functions. Checking for over/underflow, peeking at the top 
 /// stackframe, ...
