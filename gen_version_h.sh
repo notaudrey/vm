@@ -1,10 +1,10 @@
 #!/bin/bash
 
-FILE="src/version.h"
+FILE="src/common/version.h"
 GIT_SHORT_HASH=$(git rev-parse --short --verify HEAD)
 GIT_LONG_HASH=$(git rev-parse --verify HEAD)
 DATE=$(date +'%Y-%m-%d@%H:%M:%S')
-OPCODES=$(cat src/opcodes.h | grep OPCODE | wc -l)
+OPCODES=$(cat src/common/opcodes.h | grep OPCODE | wc -l)
 
 define() {
     echo "#define ${1} \"${2}\"" >> $FILE

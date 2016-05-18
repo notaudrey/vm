@@ -1,5 +1,6 @@
 __pycache__/
-./lang
+./vm
+./compiler
 *.swp
 src/*.swp
 src/.*.sw*
