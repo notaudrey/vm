@@ -1,9 +1,0 @@
-__pycache__/
-./vm
-./compiler
-*.swp
-src/*.swp
-src/.*.sw*
-vgcore*
-tmp/
-
