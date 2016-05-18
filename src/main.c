@@ -57,7 +57,6 @@ int main(int argc, char** argv) {
         DEBUG("opcode: 0x%x (%s)\n", opcode, opcode_name_table[opcode]);
         
         //                                                            end typecast <=
-        //                                                                          |
         //          => cast to a bool(struct < => get value at the opcode's index <=| 
         //          |  vm_s *) function ptr  | |  in the opcode dispatch table     || => call function with vm as arg
         //          |                        | |                                   || |  |
