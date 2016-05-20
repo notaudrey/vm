@@ -16,29 +16,52 @@ const uint64_t MAGIC_NUMBER = 0xDEADBEEFBABECAFE;
 
 /// The "header" for the section of the bytecode that is just a string lookup
 /// table. This should literally be the string ".strings" (hex values listed 
-/// below). After this string, every 3 bytes will be used for string lookup and
-/// storage. The first byte will be the string id (starting at 0). The second 
-/// byte is the offset into the bytecode of where the string is located, and
-/// the third byte is the length of the string. For example:
+/// below). After this string, every 8 bytes will be used for string lookup and
+/// storage. The first 4 bytes are the offset into the bytecode of where the 
+/// string is located, and the final four bytes are the length of the string. 
+/// For example:
 /// 
 /// 
-/// 2e 73 74 72 69 6e 67 73     # .strings
-/// 00 2b 04                    # string 0 starts at 2b and has length 0x04
-/// 01 2f 0f                    # string 1 starts at 2f and has length 0x0f
+///     2e 73 74 72 69 6e 67 73  # .strings
+///     00 00 00 2b 00 00 00 04  # string 0 starts at 2b and has length 0x04
+///     00 00 00 2f 00 00 00 0f  # string 1 starts at 2f and has length 0x0f
 /// 
-/// # .functions etc goes here
+///     # .variables goes here
+///     # .functions goes here
 /// 
-/// 2e 2e 2e 2e                 # string 0, at 0x2b, with length 4, contents 
-///                             # '....'
+///     2e 2e 2e 2e                 # string 0, at 0x2b, with length 4, contents 
+///                                 # '....'
 /// 
-/// # rest of strings and other data
-/// 
-/// EOF
+///     # rest of strings and other data
 const char *SECTION_HEADER_STRINGS = ".strings";
 
+/// The "header" for the section of the bytecode that is just for variable
+/// definitions. Variable definitions start with opcode 0x03
+/// (OPCODE_VARIABLE_DECLARATOR). The following four bytes are the id of the
+/// string constant that holds the variable's name. The next four bytes are a
+/// "pointer" to some string constant (an id of a string constant) that 
+/// represents the type of this variable. For example:
+/// 
+///     .strings
+///     XX XX XX XX 00 00 00 04 # variable name string
+///     XX XX XX XX 00 00 00 01 # variable type string
+///     
+///     .variables
+///     03 00 00 00 00 00 00 00 01
+///     
+///     # .functions
+///     
+///     # data section
+///     74 65 73 74 # string 0: test
+///     49          # string 1: I
+///     
+///     
+///     
+const char *SECTION_HEADER_VARIABLES = ".variables";
+
 /// The "header" for the section of the bytecode that is just for function 
-/// definitions. Function definitions start with opcode 0x03
-/// (OPCODE_FUNCTION_DECLARATOR). The next two bytes are ids for the strings
+/// definitions. Function definitions start with opcode 0x04
+/// (OPCODE_FUNCTION_DECLARATOR). The next eight bytes are ids for the strings
 /// that represent the function's name and signature, respectively. The four
 /// bytes after that are an integer representing how long the function is, in
 /// bytes (because honestly, if you need more than ~4B bytes for a function, 
@@ -46,10 +69,12 @@ const char *SECTION_HEADER_STRINGS = ".strings";
 /// opcode or opcode argument, up until the end of the function. For example:
 /// 
 ///     .strings
-///     00 XX 04 # function name string
-///     01 XX 03 # function signature string
+///     XX XX XX XX 00 00 00 04 # function name string
+///     XX XX XX XX 00 00 00 03 # function signature string
 ///     
-///     # ...
+///     # .strings continues here
+///     
+///     # .variables goes here
 ///     
 ///     .functions
 ///     # Declares a function with name at string 0 and signature at string 1
@@ -64,12 +89,20 @@ const char *SECTION_HEADER_STRINGS = ".strings";
 ///     # 
 ///     # which literally only pushes two values onto the stack and then 
 ///     # immediately pops them off.
-///     03 00 01 00 01 02 02
+///     #=> opcode 0x04 (OPCODE_FUNCTION_DECLARATOR)
+///     #| ----------=> string id 0
+///     #| |         | ----------=> string id 1
+///     #| |         | |         | => OPCODE_TRUE
+///     #| |         | |         | |  => OPCODE_FALSE
+///     #| |         | |         | |  |  => OPCODE_POP
+///     #| |         | |         | |  |  |  => OPCODE_POP
+///     #| |         | |         | |  |  |  |
+///     04 00 00 00 00 00 00 00 01 00 01 02 02
 ///     
 ///     # ...
 ///     
-///     00 74 65 73 74 # string 0: test
-///     01 28 29 56    # string 1: ()V
+///     74 65 73 74 # string 0: test
+///     28 29 56    # string 1: ()V
 /// 
 /// Once a function declaration ends (based on the offset after the 3 bytes),
 /// functions may continue to be declared infinitely (so to speak). Once all

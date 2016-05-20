@@ -20,30 +20,34 @@ int main(int argc, char** argv) {
         // 
         // Our test string is 'test', hence size=0x04
         //
-        // => String 0x00
-        // |  => Starts at 0x2B
-        // |  |     => Length of 0x04
-        0x00, 0x2B, 0x04, 
-        0x01, 0x2E, 0x03,
+        // => Starts at 0x2B
+        // |     => Length of 0x04
+        0x2B, 0x04, 
+        0x2E, 0x03,
         
         // Section header
         // --------------
-        // Second section is functions
+        // Second section is variables
+        '.', 'v', 'a', 'r', 'i', 'a', 'b', 'l', 'e', 's',
+
+        // Section header
+        // --------------
+        // Third section is functions
         '.', 'f', 'u', 'n', 'c', 't', 'i', 'o', 'n', 's',
 
         // Function header 
         // ---------------
-        // 0x03 is the function declaration opcode. The next two bytes are 
+        // 0x04 is the function declaration opcode. The next two bytes are 
         // string identifiers. The first string is the function name, and the
         // second string is the function signature. 
         // The next four bytes are an integer representing the length of the
         // function, in bytes.
         // 
         // => Function opcode
-        // |  => Function name: string 0x00
-        // |  |     => Function signature: string 0x01
-        // |  |     |     => Length of this function: 0x00000000
-        0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x04,
+        // |  => Function name: string 0x00 00 00 00
+        // |  |                       => Function signature: string 0x00 00 00 01
+        // |  |                       |                       => Length of this function: 0x00 00 00 04
+        0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x04,
         // Function body
         // -------------
         // Every byte in here, up to the end of the function, is interpreted as

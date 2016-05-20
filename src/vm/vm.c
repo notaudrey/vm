@@ -140,10 +140,18 @@ int dispatch_opcode_POP(struct vm_s *vm) {
     return ERROR_NO_ERROR;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
 /// Dummy
 int dispatch_opcode_FUNCTION_DECLARATOR(struct vm_s *vm) {
     return 0;
 }
+
+/// Dummy
+int dispatch_opcode_VARIABLE_DECLARATOR(struct vm_s *vm) {
+    return 0;
+}
+#pragma clang diagnostic pop
 
 /// 
 /// Helper functions. Checking for over/underflow, peeking at the top 

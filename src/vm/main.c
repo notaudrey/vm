@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     fseek(file, 0, SEEK_END);
     // Get current offset into file (in bytes)
     long size = ftell(file);
-    DEBUG("size: %u\n", size)
+    DEBUG("size: %ld\n", size)
     // Jump back to the beginning of the file
     rewind(file);
 
