@@ -14,7 +14,7 @@ $(COMPILER): versionheader
 	cd src/compiler && $(CC) $(CFLAGS) -o ../../$(COMPILER) *.c ../common/*.c
 
 valgrind: $(VM)
-	valgrind -v --track-origins=yes --leak-check=full ./$(VM)
+	valgrind -v --track-origins=yes --leak-check=full ./$(VM) test.adri
 
 $(VM): versionheader
 	#

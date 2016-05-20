@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 #include "../common/config.h"
 #include "../common/debug.h"
@@ -25,11 +27,66 @@ char *error_lookup_table[] = {
     #undef QUOTE
 };
 
+const uint64_t MAGIC_NUMBER = 0xDEADBEEFBABECAFE;
 
 int main(int argc, char** argv) {
     printf("git short hash: %s\n", GIT_SHORT_HASH);
     printf("git long hash: %s\n", GIT_LONG_HASH);
     printf("build date: %s\n", DATE);
+    if(argc < 2) {
+        fprintf(stderr, RED "no file passed\n" RESET);
+        exit(1);
+    }
+
+    DEBUG("file: %s\n", argv[1])
+    FILE *file = fopen(argv[1], "rb");
+    // Buffer to allocate
+    uint8_t *buffer;
+    // Jump to the end of the file
+    fseek(file, 0, SEEK_END);
+    // Get current offset into file (in bytes)
+    long size = ftell(file);
+    DEBUG("size: %u\n", size)
+    // Jump back to the beginning of the file
+    rewind(file);
+
+    // Allocate a buffer to fit file contents + '\0'
+    buffer = calloc((size + 1), sizeof(char));
+    fread(buffer, size, 1, file);
+    fclose(file);
+    // Stitch together magic constant from first 8 bytes
+    const uint64_t magic_number = ((uint64_t) buffer[0] << 56) | 
+                                  ((uint64_t) buffer[1] << 48) |
+                                  ((uint64_t) buffer[2] << 40) | 
+                                  ((uint64_t) buffer[3] << 32) |
+                                  ((uint64_t) buffer[4] << 24) | 
+                                  ((uint64_t) buffer[5] << 16) | 
+                                  ((uint64_t) buffer[6] << 8)  | 
+                                  ((uint64_t) buffer[7] << 0);
+
+    if(magic_number != MAGIC_NUMBER) {
+        fprintf(stderr, RED "not valid bytecode: %s\n" RESET, argv[1]);
+        fprintf(stderr, RED "magic:    0x%lx\n" RESET, magic_number);
+        fprintf(stderr, RED "expected: 0x%lx\n" RESET, MAGIC_NUMBER);
+        exit(1);
+    } 
+#ifdef __DEBUG_BUILD
+    else {
+        DEBUG("valid bytecode!\n")
+    }
+#endif
+
+    char section_header[] = {
+        buffer[8],
+        buffer[9],
+        buffer[10],
+        buffer[11],
+        buffer[12],
+        buffer[13],
+        buffer[14],
+        buffer[15],
+    };
+    DEBUG("header: '%s'\n", section_header)
 
     struct vm_s *vm = vm_init();
     enum opcode_e program[] = {
@@ -98,6 +155,7 @@ int main(int argc, char** argv) {
 #endif
     }
 end:
+    free(buffer);
     vm_destroy(vm);
     return 0;
 }

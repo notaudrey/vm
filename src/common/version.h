@@ -1,4 +1,4 @@
-#define GIT_SHORT_HASH "e7de83c"
-#define GIT_LONG_HASH "e7de83c9a434b6d2f0d2fa434989a031e4a9171e"
-#define DATE "2016-05-18@17:19:17"
+#define GIT_SHORT_HASH "b7d9303"
+#define GIT_LONG_HASH "b7d9303d2453ecb3069a8f7d69f80f885e3c92a0"
+#define DATE "2016-05-19@21:22:19"
 #define OPCODE_COUNT "4"

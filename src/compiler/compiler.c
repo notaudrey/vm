@@ -3,11 +3,11 @@
 
 int main(int argc, char** argv) {
     FILE* file = fopen("test.adri", "wb");
-    char data[] = {
+    unsigned char data[] = {
         // File header 
         // -----------
         // 0xDEADBEEFBABECAFE
-        // Yes, I was trying to cram 4 'words' into 16 bytes.
+        // Yes, I was trying to cram 4 'words' into 8 bytes.
         0xDE, 0xAD, 0xBE, 0xEF, 0xBA, 0xBE, 0xCA, 0xFE,
 
         // Section header
@@ -40,8 +40,8 @@ int main(int argc, char** argv) {
         // function, in bytes.
         // 
         // => Function opcode
-        // |  => Function name: string 0x01
-        // |  |     => Function signature: string 0x02
+        // |  => Function name: string 0x00
+        // |  |     => Function signature: string 0x01
         // |  |     |     => Length of this function: 0x00000000
         0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x04,
         // Function body
@@ -74,5 +74,6 @@ int main(int argc, char** argv) {
     };
 
     fwrite(data, 50, 1, file);
+    fclose(file);
     return 0;
 }
