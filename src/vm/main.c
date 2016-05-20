@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
         buffer[14],
         buffer[15],
     };
-    DEBUG("header: '%s'\n", section_header)
+    DEBUG("header: %s\n", section_header)
 
     struct vm_s *vm = vm_init();
     enum opcode_e program[] = {

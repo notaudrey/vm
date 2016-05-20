@@ -47,6 +47,9 @@ const char *SECTION_HEADER_STRINGS = ".strings";
 ///     XX XX XX XX 00 00 00 01 # variable type string
 ///     
 ///     .variables
+///     => opcode 0x03 (OPCODE_VARIABLE_DECLARATOR)
+///     |  ----------=> string id 0
+///     |  |         | ----------=> string id 1
 ///     03 00 00 00 00 00 00 00 01
 ///     
 ///     # .functions

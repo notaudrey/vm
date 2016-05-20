@@ -151,7 +151,28 @@ int dispatch_opcode_FUNCTION_DECLARATOR(struct vm_s *vm) {
 int dispatch_opcode_VARIABLE_DECLARATOR(struct vm_s *vm) {
     return 0;
 }
+
+// TODO
+int dispatch_opcode_STORE_LOCAL(struct vm_s *vm) {
+    return 0;
+}
+
+// TODO
+int dispatch_opcode_LOAD_LOCAL(struct vm_s *vm) {
+    return 0;
+}
+
+// TODO
+int dispatch_opcode_STORE_GLOBAL(struct vm_s *vm) {
+    return 0;
+}
+
+// TODO
+int dispatch_opcode_LOAD_GLOBAL(struct vm_s *vm) {
+    return 0;
+}
 #pragma clang diagnostic pop
+
 
 /// 
 /// Helper functions. Checking for over/underflow, peeking at the top 

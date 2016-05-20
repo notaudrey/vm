@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
         // --------------
         // First section is string lookup table
         '.', 's', 't', 'r', 'i', 'n', 'g', 's',
-        // String number, string start, length. Start and length are in bytes.
+        // String start, length. Start and length are in bytes.
         // Start is the 'address' of the string's first character in the file.
         // Length is just how many bytes the string is.
         // 
@@ -22,13 +22,15 @@ int main(int argc, char** argv) {
         //
         // => Starts at 0x2B
         // |     => Length of 0x04
-        0x2B, 0x04, 
-        0x2E, 0x03,
+        0x44, 0x04, 
+        0x48, 0x03,
+        0x4B, 0x01,
         
         // Section header
         // --------------
         // Second section is variables
         '.', 'v', 'a', 'r', 'i', 'a', 'b', 'l', 'e', 's',
+        0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
 
         // Section header
         // --------------
@@ -73,11 +75,12 @@ int main(int argc, char** argv) {
         't', 'e', 's', 't',
         // String '()V'
         '(', ')', 'V',
+        'I',
 
         // That's it. We're done.
     };
 
-    fwrite(data, 50, 1, file);
+    fwrite(data, sizeof(data) / sizeof(char), 1, file);
     fclose(file);
     return 0;
 }
