@@ -37,6 +37,9 @@ int main(int argc, char **argv) {
     // 
     // See: http://stackoverflow.com/questions/17435115/memcpy-from-byte-to-unsigned-int-is-reversing-byte-order
     // See: https://stackoverflow.com/questions/16008879/how-do-you-write-portably-reverse-network-byte-order
+    // See: http://stackoverflow.com/questions/5874311/reversing-endianness-with-memcpy
+    // See: http://programmers.stackexchange.com/questions/215535/regarding-little-endian-and-big-endian-conversion
+    // See: http://stackoverflow.com/questions/9144800/c-reverse-bits-in-unsigned-integer
     // 
     // uint64_t magic_number;
     // memcpy(&magic_number, buffer, sizeof(magic_number));
