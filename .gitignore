@@ -5,4 +5,7 @@ src/.*.sw*
 vgcore*
 tmp/
 *.adri
+/vm
+/compiler
+/scratch
 
