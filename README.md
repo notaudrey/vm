@@ -1,4 +1,4 @@
 title!
 ======
 
-A simple VM to run a simple language. Most of the major design decisions like "OO vs procedural" haven't been decided on yet.
+A simple VM to run a simple language. Designed with a procedural language in mind, so all you get is local/global variables, global functions, probably structures, and maybe some sort of namespacing.
