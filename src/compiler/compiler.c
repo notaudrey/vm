@@ -20,17 +20,23 @@ int main(int argc, char** argv) {
         // 
         // Our test string is 'test', hence size=0x04
         //
-        // => Starts at 0x2B
-        // |     => Length of 0x04
-        0x44, 0x04, 
-        0x48, 0x03,
-        0x4B, 0x01,
+        // => Starts at 0x55<=
+        // |                 |  => Length of 0x04 <=--
+        0x00, 0x00, 0x00, 0x59, 0x00, 0x00, 0x00, 0x04, 
+        0x00, 0x00, 0x00, 0x5D, 0x00, 0x00, 0x00, 0x03,
+        0x00, 0x00, 0x00, 0x60, 0x00, 0x00, 0x00, 0x01,
         
         // Section header
         // --------------
         // Second section is variables
         '.', 'v', 'a', 'r', 'i', 'a', 'b', 'l', 'e', 's',
-        0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
+        // Variable declaration
+        // --------------------
+        // Declare a variable with name of string 0x00000000 and type of string 
+        // 0x00000002. In this example file, string 0x00000000 is 'test' and
+        // string 0x00000002 is 'I', so this would be declaring a variable
+        // 'test' of type 'integer'
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
 
         // Section header
         // --------------
@@ -45,11 +51,10 @@ int main(int argc, char** argv) {
         // The next four bytes are an integer representing the length of the
         // function, in bytes.
         // 
-        // => Function opcode
-        // |  => Function name: string 0x00 00 00 00
-        // |  |                       => Function signature: string 0x00 00 00 01
-        // |  |                       |                       => Length of this function: 0x00 00 00 04
-        0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x04,
+        // => Function name: string 0x00 00 00 00
+        // |                       => Function signature: string 0x00 00 00 01
+        // |                       |                       => Length of this function: 0x00 00 00 04
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x04,
         // Function body
         // -------------
         // Every byte in here, up to the end of the function, is interpreted as
@@ -63,13 +68,15 @@ int main(int argc, char** argv) {
         // as a quick test
         0x00, 0x01, 0x02, 0x02,
 
+        // Section header
+        // --------------
+        // Fourth section is data
+        '.', 'd', 'a', 't', 'a',
+        
         // Data section
         // ------------
-        // End of the file is just assorted data. There's no section header
-        // here because there's no need; once we hit the end of .functions, we
-        // know that there's going to be nothing but data left over. This is 
-        // our 'constant pool,' where lookups from things such as .strings will
-        // take us to get data
+        // End of the file is just assorted data. This is our 'constant pool,' 
+        // where lookups from things such as .strings will take us to get data.
         // 
         // String 'test'
         't', 'e', 's', 't',

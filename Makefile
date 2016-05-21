@@ -20,8 +20,8 @@ $(SCRATCH): $(COMPILER)
 	#
 	cd src/scratch && $(CC) $(CFLAGS) -o ../../$(SCRATCH) *.c ../common/*.c
 	./compiler
-	valgrind -v --track-origins=yes --leak-check=full --show-leak-kinds=all ./scratch test.adri
-	#./scratch test.adri
+	#valgrind -v --track-origins=yes --leak-check=full --show-leak-kinds=all ./scratch test.adri
+	./scratch test.adri
 
 valgrind: $(VM)
 	valgrind -v --track-origins=yes --leak-check=full ./$(VM) test.adri

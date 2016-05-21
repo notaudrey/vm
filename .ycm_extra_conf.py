@@ -40,6 +40,7 @@ flags = [
 '-pipe',
 '-g',
 '-lreadline',
+'-D__DEBUG_BUILD',
 '-DNDEBUG',
 # You 100% do NOT need -DUSE_CLANG_COMPLETER in your flags; only the YCM
 # source code needs it.

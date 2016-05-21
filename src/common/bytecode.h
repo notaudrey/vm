@@ -36,21 +36,19 @@ const uint64_t MAGIC_NUMBER = 0xDEADBEEFBABECAFE;
 const char *SECTION_HEADER_STRINGS = ".strings";
 
 /// The "header" for the section of the bytecode that is just for variable
-/// definitions. Variable definitions start with opcode 0x03
-/// (OPCODE_VARIABLE_DECLARATOR). The following four bytes are the id of the
-/// string constant that holds the variable's name. The next four bytes are a
-/// "pointer" to some string constant (an id of a string constant) that 
-/// represents the type of this variable. For example:
+/// definitions. The first four bytes are the id of the string constant that 
+/// holds the variable's name. The next four bytes are a "pointer" to some 
+/// string constant (an id of a string constant) that represents the type of 
+/// this variable. For example:
 /// 
 ///     .strings
 ///     XX XX XX XX 00 00 00 04 # variable name string
 ///     XX XX XX XX 00 00 00 01 # variable type string
 ///     
 ///     .variables
-///     => opcode 0x03 (OPCODE_VARIABLE_DECLARATOR)
-///     |  ----------=> string id 0
-///     |  |         | ----------=> string id 1
-///     03 00 00 00 00 00 00 00 01
+///     ----------=> string id 0
+///     |         | ----------=> string id 1
+///     00 00 00 00 00 00 00 01
 ///     
 ///     # .functions
 ///     
@@ -113,3 +111,7 @@ const char *SECTION_HEADER_VARIABLES = ".variables";
 /// started, and no header is needed therefor.
 const char *SECTION_HEADER_FUNCTIONS = ".functions";
 
+/// The "header" for the section of the bytecode that is just raw data pointed
+/// to by different lookup tables in the bytecode. Interpretation of this 
+/// section is purely up to the vm.
+const char *SECTION_HEADER_DATA = ".data";
