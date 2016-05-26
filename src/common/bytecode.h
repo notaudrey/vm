@@ -115,3 +115,4 @@ const char *SECTION_HEADER_FUNCTIONS = ".functions";
 /// to by different lookup tables in the bytecode. Interpretation of this 
 /// section is purely up to the vm.
 const char *SECTION_HEADER_DATA = ".data";
+

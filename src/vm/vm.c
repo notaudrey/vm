@@ -171,6 +171,16 @@ int dispatch_opcode_STORE_GLOBAL(struct vm_s *vm) {
 int dispatch_opcode_LOAD_GLOBAL(struct vm_s *vm) {
     return 0;
 }
+
+// TODO
+int dispatch_opcode_RETURN(struct vm_s *vm) {
+    return 0;
+}
+
+// TODO
+int dispatch_opcode_INVOKE_FUNCTION(struct vm_s *vm) {
+    return 0;
+}
 #pragma clang diagnostic pop
 
 

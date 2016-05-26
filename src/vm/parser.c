@@ -1,12 +1,11 @@
-#include <stdbool.h>
+/// The bytecode parser for the VM
+
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../common/bytecode.h"
-//#include "../common/opcodes.h"
-//#include "../common/error.h"
+#include "vm.h"
 #include "../common/debug.h"
-#include "../common/version.h"
+#include "../common/bytecode.h"
 
 enum mode_e {
     NONE,
@@ -17,25 +16,19 @@ enum mode_e {
 };
 
 // Create a lookup table so that we can see opcode names during debugging.
-static char *opcode_name_table[] = {
+static const char *opcode_name_table[] = {
 // Abuse of stringification
 #define OPCODE(name, _) "" #name "",
 #include "../common/opcodes.h"
 #undef OPCODE
 };
 
-// TODO 200 lines to parse a seemingly simple bytecode format seems excessive..........
-int main(int argc, char **argv) {
-    printf("git short hash: %s\n", GIT_SHORT_HASH);
-    printf("git long hash: %s\n", GIT_LONG_HASH);
-    printf("build date: %s\n", DATE);
-    if(argc < 2) {
-        fprintf(stderr, RED "no file passed\n" RESET);
-        exit(1);
-    }
-
-    DEBUG("file: %s\n", argv[1])
-    FILE *file = fopen(argv[1], "rb");
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+void parse_bytecode(char *file_name, struct vm_s *vm) {
+#pragma clang diagnostic pop
+    DEBUG("file: %s\n", file_name)
+    FILE *file = fopen(file_name, "rb");
     // Buffer to allocate
     uint8_t *buffer;
     // Jump to the end of the file
@@ -73,7 +66,7 @@ int main(int argc, char **argv) {
                                   ((uint64_t) buffer[7] << 0);
 
     if(magic_number != MAGIC_NUMBER) {
-        fprintf(stderr, RED "not valid bytecode: %s\n" RESET, argv[1]);
+        fprintf(stderr, RED "not valid bytecode: %s\n" RESET, file_name);
         fprintf(stderr, RED "magic:    0x%lx\n" RESET, magic_number);
         fprintf(stderr, RED "expected: 0x%lx\n" RESET, MAGIC_NUMBER);
         goto end;
@@ -215,8 +208,26 @@ int main(int argc, char **argv) {
             }
             printf("function %d: name @ string %d, signature @ string %d\n", function_counter++, name, signature);
             const int j = i + length;
+            // TODO: handle load/store/invoke opcodes!!
             for(; i < j; i++) {
                 printf("opcode: 0x%x (%s)\n", buffer[i], opcode_name_table[buffer[i]]);
+                if(buffer[i] == OPCODE_LOAD_LOCAL || buffer[i] == OPCODE_STORE_LOCAL
+                         || buffer[i] == OPCODE_LOAD_GLOBAL || buffer[i] == OPCODE_STORE_GLOBAL
+                         || buffer[i] == OPCODE_INVOKE_FUNCTION) {
+                    printf("  parameters:\n");
+                    uint32_t parameter_one = ((uint32_t) buffer[i + 1] << 24) |
+                                             ((uint32_t) buffer[i + 2] << 16) |
+                                             ((uint32_t) buffer[i + 3] << 8)  |
+                                             ((uint32_t) buffer[i + 4]);
+                    i += 4;
+                    uint32_t parameter_two = ((uint32_t) buffer[i + 1] << 24) |
+                                             ((uint32_t) buffer[i + 2] << 16) |
+                                             ((uint32_t) buffer[i + 3] << 8)  |
+                                             ((uint32_t) buffer[i + 4]);
+                    i += 4;
+                    printf("  * string %d\n", parameter_one);
+                    printf("  * string %d\n", parameter_two);
+                }
             }
             --i; // Fix i because i++ at the end of the loop
         }
@@ -224,6 +235,5 @@ int main(int argc, char **argv) {
 
 end:
     free(buffer); // calloc()
-    return 0;
+    // TODO: Check errors, stuff everything into *vm
 }
-

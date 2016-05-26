@@ -26,7 +26,7 @@ $(SCRATCH): $(COMPILER)
 valgrind: $(VM)
 	valgrind -v --track-origins=yes --leak-check=full ./$(VM) test.adri
 
-$(VM): versionheader
+$(VM): compiler
 	#
 	# Making VM
 	#

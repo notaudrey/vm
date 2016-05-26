@@ -35,6 +35,6 @@
     #define DEBUG(fmt, args...) _LOG("DEBUG", fmt, ##args)
 #else
     // Not debug mode? Don't print anything
-    #define DEBUG(type, fmt, args...)
+    #define DEBUG(fmt, args...)
 #endif
 

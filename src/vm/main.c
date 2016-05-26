@@ -4,6 +4,7 @@
 
 #include "../common/config.h"
 #include "../common/debug.h"
+#include "parser.h"
 #include "stack.h"
 #include "value.h"
 #include "vm.h"
@@ -27,8 +28,6 @@ char *error_lookup_table[] = {
     #undef QUOTE
 };
 
-const uint64_t MAGIC_NUMBER = 0xDEADBEEFBABECAFE;
-
 int main(int argc, char** argv) {
     printf("git short hash: %s\n", GIT_SHORT_HASH);
     printf("git long hash: %s\n", GIT_LONG_HASH);
@@ -38,57 +37,9 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    DEBUG("file: %s\n", argv[1])
-    FILE *file = fopen(argv[1], "rb");
-    // Buffer to allocate
-    uint8_t *buffer;
-    // Jump to the end of the file
-    fseek(file, 0, SEEK_END);
-    // Get current offset into file (in bytes)
-    long size = ftell(file);
-    DEBUG("size: %ld\n", size)
-    // Jump back to the beginning of the file
-    rewind(file);
-
-    // Allocate a buffer to fit file contents + '\0'
-    buffer = calloc((size + 1), sizeof(char));
-    fread(buffer, size, 1, file);
-    fclose(file);
-    // Stitch together magic constant from first 8 bytes
-    const uint64_t magic_number = ((uint64_t) buffer[0] << 56) | 
-                                  ((uint64_t) buffer[1] << 48) |
-                                  ((uint64_t) buffer[2] << 40) | 
-                                  ((uint64_t) buffer[3] << 32) |
-                                  ((uint64_t) buffer[4] << 24) | 
-                                  ((uint64_t) buffer[5] << 16) | 
-                                  ((uint64_t) buffer[6] << 8)  | 
-                                  ((uint64_t) buffer[7] << 0);
-
-    if(magic_number != MAGIC_NUMBER) {
-        fprintf(stderr, RED "not valid bytecode: %s\n" RESET, argv[1]);
-        fprintf(stderr, RED "magic:    0x%lx\n" RESET, magic_number);
-        fprintf(stderr, RED "expected: 0x%lx\n" RESET, MAGIC_NUMBER);
-        exit(1);
-    } 
-#ifdef __DEBUG_BUILD
-    else {
-        DEBUG("valid bytecode!\n")
-    }
-#endif
-
-    char section_header[] = {
-        buffer[8],
-        buffer[9],
-        buffer[10],
-        buffer[11],
-        buffer[12],
-        buffer[13],
-        buffer[14],
-        buffer[15],
-    };
-    DEBUG("header: %s\n", section_header)
 
     struct vm_s *vm = vm_init();
+    parse_bytecode(argv[1], vm);
     enum opcode_e program[] = {
         OPCODE_TRUE,
         OPCODE_FALSE,
@@ -99,14 +50,6 @@ int main(int argc, char** argv) {
     // Eventually this won't matter
     const int program_length = sizeof(program) / sizeof(*program);
     DEBUG("program length: %d\n", program_length);
-#ifdef __DEBUG_BUILD
-    DEBUG("program:\n")
-    DEBUG("--------\n")
-    for(int i = 0; i < program_length; i++) {
-        DEBUG("0x%08lx: 0x%x/%s\t#%d\n", i * sizeof(enum opcode_e), program[i], opcode_name_table[program[i]], i)
-    }
-    DEBUG("--------\n")
-#endif
     
     for(int i = 0; i < program_length; i++) {
         enum opcode_e opcode = program[i];
@@ -155,7 +98,6 @@ int main(int argc, char** argv) {
 #endif
     }
 end:
-    free(buffer);
     vm_destroy(vm);
     return 0;
 }

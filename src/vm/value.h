@@ -3,12 +3,6 @@
 #include <stdbool.h>
 #include "vm.h"
 
-struct vm_function_s {
-    char *function_name;
-    char *function_signature;
-    enum opcode_e function_body[];
-};
-
 enum value_type_e {
     INT,
     BOOLEAN,
@@ -25,3 +19,18 @@ struct value_s {
         struct vm_function_s *function_value;
     };
 };
+
+struct vm_function_s {
+    char *function_namespace;
+    char *function_name;
+    char *function_signature;
+    enum opcode_e function_body[];
+};
+
+struct vm_variable_s {
+    char *variable_namespace;
+    char *variable_name;
+    char *variable_type;
+    struct value_s value;
+};
+

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../common/config.h"
-#include "value.h"
 
 struct stack_s {
     void *stack[STACK_LIMIT];
