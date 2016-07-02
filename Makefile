@@ -4,7 +4,7 @@ VM = vm
 COMPILER = compiler
 SCRATCH = scratch
 
-CFLAGS += -Wall -Wextra -pipe -lreadline -std=c11
+CFLAGS += -Wall -Wextra -pipe -lreadline -lbsd -std=c11
 
 all: $(VM) $(COMPILER)
 
@@ -36,4 +36,4 @@ versionheader: clean
 	bash gen_version_h.sh
 
 clean:
-	rm -f *.a *.o *.la *.lo *.so *.so.* *.out *.adri $(VM) $(COMPILER)
+	rm -f *.a *.o *.la *.lo *.so *.so.* *.out *.adri $(VM) $(COMPILER) $(SCRATCH)

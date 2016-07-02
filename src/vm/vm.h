@@ -3,23 +3,15 @@
 #include <stdbool.h>
 
 #include "../common/list.h"
+
 #include "stack.h"
-
-// See https://github.com/munificent/wren/blob/master/src/vm/wren_vm.h
-enum opcode_e {
-    #define OPCODE(name, _) OPCODE_##name,
-    #include "../common/opcodes.h"
-    #undef OPCODE
-};
-
-enum error_e {
-    #define ERROR(name) ERROR_##name,
-    #include "../common/error.h"
-    #undef ERROR
-};
+#include "value.h"
 
 struct vm_s {
     struct stack_s *stack;
+    struct list_s *strings;
+    struct list_s *functions;
+    struct list_s *variables;
     unsigned int opcode_counter;
     // The opcode dispatch table is just an array of pointers to void functions
     // declared in vm.c, which we use to actually handle opcode dispatch. The
@@ -31,6 +23,7 @@ struct vm_s {
     // return value is an offset into the error message lookup table in error.h
     // and will be printed out, and the VM will exit immediately.
     int (**opcode_dispatch_table) (struct vm_s *);
+    // TODO: Function struct list
 };
 
 /// The context for a stackframe. Would be used for printing out information
@@ -67,4 +60,7 @@ bool vm_push_frame(struct vm_s *, struct stackframe_s *);
 struct stackframe_s *vm_pop_frame(struct vm_s *);
 struct stackframe_s *vm_create_frame(char *, unsigned int);
 struct stackframe_s *vm_peek_frame(struct vm_s *);
+void vm_add_string(struct vm_s *, struct vm_constant_string_s *);
+void vm_add_function(struct vm_s *, struct vm_function_s *);
+void vm_add_variable(struct vm_s *, struct vm_variable_s *);
 

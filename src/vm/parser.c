@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <bsd/string.h>
 
 #include "vm.h"
 #include "../common/debug.h"
@@ -16,17 +17,7 @@ enum mode_e {
 };
 
 // Create a lookup table so that we can see opcode names during debugging.
-static const char *opcode_name_table[] = {
-// Abuse of stringification
-#define OPCODE(name, _) "" #name "",
-#include "../common/opcodes.h"
-#undef OPCODE
-};
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
 void parse_bytecode(char *file_name, struct vm_s *vm) {
-#pragma clang diagnostic pop
     DEBUG("file: %s\n", file_name)
     FILE *file = fopen(file_name, "rb");
     // Buffer to allocate
@@ -75,8 +66,6 @@ void parse_bytecode(char *file_name, struct vm_s *vm) {
     enum mode_e mode = NONE;
     // Read to the end of the buffer
     int string_counter = 0;
-    int variable_counter = 0;
-    int function_counter = 0;
     bool valid_string_header = false;
     bool valid_variable_header = false;
     bool valid_function_header = false;
@@ -120,8 +109,24 @@ void parse_bytecode(char *file_name, struct vm_s *vm) {
                 i -= 8;
                 continue;
             }
-            DEBUG("found string: '%.*s'\n", length, buffer + location);
-            printf("string %d: %.*s\n", string_counter++, length, buffer + location);
+            char string[length+1];
+            // So linting throws a warning on 'buffer + location' as it is 
+            // being passed to strlcpy. However, this SEEMS to work fine, so
+            // I'm not quite brave enough to change it for the sake of changing
+            // it. (. _ . )
+            strlcpy(string, buffer + location, length + 1);
+            string[length] = '\0';
+            DEBUG("Copied from buffer: %s\n", string);
+            struct vm_constant_string_s *constant_string = malloc(sizeof(struct vm_constant_string_s));
+
+            constant_string->string_namespace = malloc(sizeof(char) * strlen(file_name));
+            strlcpy(constant_string->string_namespace, file_name, strlen(file_name) + 1);
+
+            constant_string->string_id = string_counter++;
+
+            constant_string->string_value = malloc(sizeof(char) * strlen(string));
+            strlcpy(constant_string->string_value, string, strlen(string) + 1);
+            vm_add_string(vm, constant_string);
         }
         if(mode == MODE_VARIABLES) {
             if(!valid_variable_header) {
@@ -161,7 +166,21 @@ void parse_bytecode(char *file_name, struct vm_s *vm) {
                 i -= 8;
                 continue;
             }
-            printf("variable %d: name @ string %d, type @ string %d\n", variable_counter++, name, type);
+            struct vm_variable_s *variable = malloc(sizeof(struct vm_variable_s));
+
+            variable->variable_namespace = malloc(sizeof(char) * strlen(file_name));
+            strlcpy(variable->variable_namespace, file_name, strlen(file_name) + 1);
+
+            struct vm_constant_string_s *name_string = (struct vm_constant_string_s *) list_get(vm->strings, name);
+            struct vm_constant_string_s *type_string = (struct vm_constant_string_s *) list_get(vm->strings, type);
+
+            variable->variable_name = malloc(sizeof(char) * strlen(name_string->string_value));
+            strlcpy(variable->variable_name, name_string->string_value, strlen(name_string->string_value) + 1);
+
+            variable->variable_type = malloc(sizeof(char) * strlen(type_string->string_value));
+            strlcpy(variable->variable_type, type_string->string_value, strlen(type_string->string_value) + 1);
+
+            vm_add_variable(vm, variable);
         }
         if(mode == MODE_FUNCTIONS) {
             if(!valid_function_header) {
@@ -206,29 +225,44 @@ void parse_bytecode(char *file_name, struct vm_s *vm) {
                 i -= 8;
                 continue;
             }
-            printf("function %d: name @ string %d, signature @ string %d\n", function_counter++, name, signature);
+            //struct vm_function_s *function = malloc(sizeof(struct vm_function_s));
+            
+            struct vm_function_s *function = malloc(sizeof(struct vm_function_s));
+
+            function->function_namespace = malloc(sizeof(char) * strlen(file_name));
+            strlcpy(function->function_namespace, file_name, strlen(file_name) + 1);
+
+            struct vm_constant_string_s *name_string = (struct vm_constant_string_s *) list_get(vm->strings, name);
+            struct vm_constant_string_s *type_string = (struct vm_constant_string_s *) list_get(vm->strings, signature);
+
+            function->function_name = malloc(sizeof(char) * strlen(name_string->string_value));
+            strlcpy(function->function_name, name_string->string_value, strlen(name_string->string_value) + 1);
+            function->function_signature = malloc(sizeof(char) * strlen(type_string->string_value));
+            strlcpy(function->function_signature, type_string->string_value, strlen(type_string->string_value) + 1);
+            function->function_body = malloc(sizeof(uint32_t) * length);
+            
             const int j = i + length;
             // TODO: handle load/store/invoke opcodes!!
             for(; i < j; i++) {
-                printf("opcode: 0x%x (%s)\n", buffer[i], opcode_name_table[buffer[i]]);
+                function->function_body[i] = buffer[i];
                 if(buffer[i] == OPCODE_LOAD_LOCAL || buffer[i] == OPCODE_STORE_LOCAL
                          || buffer[i] == OPCODE_LOAD_GLOBAL || buffer[i] == OPCODE_STORE_GLOBAL
                          || buffer[i] == OPCODE_INVOKE_FUNCTION) {
-                    printf("  parameters:\n");
                     uint32_t parameter_one = ((uint32_t) buffer[i + 1] << 24) |
                                              ((uint32_t) buffer[i + 2] << 16) |
                                              ((uint32_t) buffer[i + 3] << 8)  |
                                              ((uint32_t) buffer[i + 4]);
+                    function->function_body[i] = parameter_one;
                     i += 4;
                     uint32_t parameter_two = ((uint32_t) buffer[i + 1] << 24) |
                                              ((uint32_t) buffer[i + 2] << 16) |
                                              ((uint32_t) buffer[i + 3] << 8)  |
                                              ((uint32_t) buffer[i + 4]);
+                    function->function_body[i] = parameter_two;
                     i += 4;
-                    printf("  * string %d\n", parameter_one);
-                    printf("  * string %d\n", parameter_two);
                 }
             }
+            vm_add_function(vm, function);
             --i; // Fix i because i++ at the end of the loop
         }
     }

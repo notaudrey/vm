@@ -1,7 +1,8 @@
 #pragma once
 
 #include <stdbool.h>
-#include "vm.h"
+#include <stdint.h>
+#include "../common/bytecode.h"
 
 enum value_type_e {
     INT,
@@ -24,7 +25,7 @@ struct vm_function_s {
     char *function_namespace;
     char *function_name;
     char *function_signature;
-    enum opcode_e function_body[];
+    uint32_t *function_body;
 };
 
 struct vm_variable_s {
@@ -32,5 +33,11 @@ struct vm_variable_s {
     char *variable_name;
     char *variable_type;
     struct value_s value;
+};
+
+struct vm_constant_string_s {
+    char *string_namespace;
+    unsigned int string_id;
+    char *string_value;
 };
 

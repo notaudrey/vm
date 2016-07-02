@@ -33,6 +33,7 @@ void *list_remove(struct list_s *list, int index) {
     void *remove = list->data[index];
     list->data[index] = NULL;
     memmove(list->data + index, list->data + index + 1, (list->size - index - 1) * sizeof(void *));
+    list->size--;
     return remove;
 }
 

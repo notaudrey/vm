@@ -5,9 +5,9 @@
 #include "../common/config.h"
 #include "../common/debug.h"
 #include "../common/list.h"
-#include "stack.h"
-#include "value.h"
 #include "../common/version.h"
+
+#include "stack.h"
 #include "vm.h"
 
 #define OPCODE(name, _) int dispatch_opcode_##name(struct vm_s *);
@@ -21,6 +21,9 @@ static inline bool vm_check_frame_stack_overflow(struct vm_s *);
 struct vm_s *vm_init(void) {
     struct vm_s *vm = malloc(sizeof(struct vm_s));
     vm->stack = stack_new();
+    vm->strings = list_new(10);
+    vm->functions = list_new(10);
+    vm->variables = list_new(10);
     vm->opcode_counter = 0;
 
     // bool (*opcode_dispatch_table[]) (struct vm_s *);
@@ -59,6 +62,24 @@ void vm_destroy(struct vm_s *vm) {
         free(frame);
     }
     free(vm->stack);
+    while(list_size(vm->strings) != 0) {
+        struct vm_constant_string_s *string = list_remove(vm->strings, list_size(vm->strings) - 1);
+        free(string);
+    }
+    free(vm->strings->data);
+    free(vm->strings);
+    while(list_size(vm->functions) != 0) {
+        struct vm_function_s *function = list_remove(vm->functions, list_size(vm->functions) - 1);
+        free(function);
+    }
+    free(vm->functions->data);
+    free(vm->functions);
+    while(list_size(vm->variables) != 0) {
+        struct vm_variable_s *variable = list_remove(vm->variables, list_size(vm->variables) - 1);
+        free(variable);
+    }
+    free(vm->variables->data);
+    free(vm->variables);
     free(vm->opcode_dispatch_table);
     free(vm);
 }
@@ -95,6 +116,21 @@ struct stackframe_s *vm_pop_frame(struct vm_s *vm) {
 #else
     return stack_pop(vm->stack);
 #endif
+}
+
+void vm_add_string(struct vm_s *vm, struct vm_constant_string_s *string) {
+    DEBUG("%s, %d, %s\n", string->string_namespace, string->string_id, string->string_value);
+    list_add(vm->strings, string);
+}
+
+void vm_add_function(struct vm_s *vm, struct vm_function_s *function) {
+    DEBUG("%s, %s, %s\n", function->function_namespace, function->function_name, function->function_signature);
+    list_add(vm->functions, function);
+}
+
+void vm_add_variable(struct vm_s *vm, struct vm_variable_s *variable)  {
+    DEBUG("%s, %s, %s\n", variable->variable_namespace, variable->variable_name, variable->variable_type);
+    list_add(vm->variables, variable);
 }
 
 /// 
